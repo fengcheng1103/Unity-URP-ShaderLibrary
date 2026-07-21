@@ -1,0 +1,14 @@
+# 忽略操作系统的垃圾文件
+.DS_Store
+Thumbs.db
+
+# 忽略临时备份文件
+*.tmp
+*.log
+
+# 忽略Unity工程里那些巨大的缓存文件夹（仅当未来你放测试工程时用）
+/Library/
+/Temp/
+/obj/
+*.csproj
+*.sln
