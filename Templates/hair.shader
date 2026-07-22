@@ -54,50 +54,55 @@ Shader "TA/HairShader"
         // ============================================================
         Pass
         {
-            Name "Outline"
+            Name "Outline"  // Pass名称为"Outline"
             Tags { "LightMode" = "SRPDefaultUnlit" }
+            // LightMode设为SRPDefaultUnlit，作为无光照的默认Pass，避免被光照系统干扰
 
-            Cull Front
-            ZWrite On
-            Blend Off
-            ColorMask RGB
+            Cull Front          // 剔除正面，只渲染背面（描边核心原理）
+            ZWrite On           // 开启深度写入，防止与其他物体穿插闪烁
+            Blend Off           // 关闭混合，描边完全不透明
+            ColorMask RGB       // 只写入RGB通道，不写Alpha通道
 
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
+            HLSLPROGRAM  // 开始HLSL代码块
+            #pragma vertex vert    // 指定顶点着色器函数名为vert
+            #pragma fragment frag  // 指定片元着色器函数名为frag
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            // 引入URP核心库，提供TransformObjectToHClip等坐标变换函数
 
-            struct Attributes
+            struct Attributes  // 顶点输入结构体
             {
-                float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
+                float4 positionOS : POSITION;  // 模型空间(Object Space)下的顶点位置
+                float3 normalOS : NORMAL;      // 模型空间下的法线方向
             };
 
-            struct Varyings
+            struct Varyings  // 顶点到片元的输出结构体
             {
-                float4 positionCS : SV_POSITION;
+                float4 positionCS : SV_POSITION;  // 裁剪空间(Clip Space)位置，GPU光栅化用
             };
 
-            CBUFFER_START(UnityPerMaterial)
-                float4 _OutlineColor;
-                float _OutlineWidth;
-            CBUFFER_END
+            // 从材质属性块读取描边参数
+            CBUFFER_START(UnityPerMaterial)  // 开始常量缓冲区，UnityPerMaterial是URP推荐命名，兼容SRP Batcher
+                float4 _OutlineColor;  // 描边颜色
+                float _OutlineWidth;   // 描边宽度
+            CBUFFER_END  // 结束常量缓冲区
 
-            Varyings vert(Attributes input)
+            Varyings vert(Attributes input)  // 顶点着色器
             {
                 Varyings output;
+                // 核心：将顶点沿法线方向向外"撑开" _OutlineWidth 的距离
                 float3 positionOS = input.positionOS.xyz + input.normalOS * _OutlineWidth;
+                // 将外扩后的位置从模型空间变换到裁剪空间
                 output.positionCS = TransformObjectToHClip(positionOS);
                 return output;
             }
 
-            half4 frag(Varyings input) : SV_Target
+            half4 frag(Varyings input) : SV_Target  // 片元着色器，SV_Target表示输出到渲染目标
             {
-                return _OutlineColor;
+                return _OutlineColor;  // 直接返回描边颜色，不做任何光照计算
             }
-            ENDHLSL
+            ENDHLSL  // 结束HLSL代码块
         }
-
         // ============================================================
         // Pass 2: 主光照渲染（ForwardLit）
         // ============================================================
@@ -113,6 +118,10 @@ Shader "TA/HairShader"
             // ---- 编译变体（必须保留在主文件中） ----
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+            // _ 表示无阴影
+            // _MAIN_LIGHT_SHADOWS 表示Shadow Map阴影
+            // _MAIN_LIGHT_SHADOWS_CASCADE 表示级联阴影(Cascaded Shadow Map)
+            // _MAIN_LIGHT_SHADOWS_SCREEN 表示屏幕空间阴影
 
             // ---- 引入 URP 核心库 ----
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
