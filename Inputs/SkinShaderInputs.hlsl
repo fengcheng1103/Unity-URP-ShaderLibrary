@@ -14,5 +14,4 @@ CBUFFER_START(UnityPerMaterial)
     float4 _SpecularColor;
     float4 _BaseMap_ST;   // Tiling & Offset
 CBUFFER_END
-
 #endif
