@@ -1,0 +1,12 @@
+// 前提：已获得 nol, shadow, ao, rampColor_nol, brdfDiffuse_Light, brdfDiffuse_Dark
+
+// 漫反射BRDF（金属度影响漫反射颜色）
+half3 brdfDiffuse_Light = albedoColor_Light * OneMinusReflectivityMetallic(metallic);
+half3 brdfDiffuse_Dark = albedoColor_Dark * OneMinusReflectivityMetallic(metallic);
+
+// 明暗混合：利用 ramp 的 alpha 通道结合 AO 和 Shadow
+float lightAndDarkRamp = min(min(shadow, ao), rampColor_nol.a);
+half3 brdfDiffuse = lerp(brdfDiffuse_Dark, brdfDiffuse_Light, lightAndDarkRamp) * rampColor_nol.rgb;
+
+// 最终直接漫反射光照
+half3 baseDiffuseLighting = brdfDiffuse * INV_PI * nol * mainLight.color * shadow;

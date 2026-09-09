@@ -1,0 +1,17 @@
+// 将最终颜色传入调试函数，可输出各种通道可视化
+outColor = ApplyDebugOutput(
+    half4(color, 1.0),
+    half4(albedoColor, 1.0),
+    normalWS,
+    metallic.rrrr,
+    roughness.rrrr,
+    emissiveColor + effectsColor,
+    baseDiffuseLighting,
+    baseSpecularLighting,
+    indirectDiffuseLighting,
+    indirectSpecularLighting,
+    rimLighColor,
+    ao,
+    screenShadow
+);
+// 此函数依赖于 _DEBUG_* 宏，在调试时启用对应宏可输出特定通道

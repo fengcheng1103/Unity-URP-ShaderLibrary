@@ -1,0 +1,24 @@
+// 前提：noh, nov, nol, roughness, metallic, albedoColor, reflectivity, shadow, mainLight
+
+// 粗糙度平方
+float roughness2 = max(roughness * roughness, HALF_MIN_SQRT);
+
+// 计算F0（基础反射率）
+half3 brdfSpecular = kDielectricSpec.rgb * reflectivity.rrr + metallic * (albedoColor.rgb - reflectivity.xxx * 0.04);
+
+// 高光修正（可选）
+#ifdef _SPECULARREFINEENABLE_ON
+    brdfSpecular = lerp(brdfSpecular, GetSpecularRefine(_SpecularRefineMap, sampler_SpecularRefineMap, brdfSpecular, metallic, roughness, noh), _SpecularRefineIntensity);
+#endif
+
+// D（法线分布）
+float d = D_DistributionGGX_Endfield(noh, roughness);
+// G（几何衰减）
+float g = G_GeometrySmith_Endfield(nov, nol, roughness);
+// F（菲涅尔）
+float3 f = F_FrenelSchlick_Direct_Endfield(nov, brdfSpecular);
+
+// 计算高光
+float3 numerator = d * g * f;
+float denominator = max(4 * nov * nol, 0.001);
+half3 baseSpecularLighting = numerator / denominator * mainLight.color * shadow;

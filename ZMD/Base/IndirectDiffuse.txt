@@ -1,0 +1,5 @@
+// 球谐光照（环境漫反射）
+real3 radianceSH = SampleSH(normalWS.xyz);
+// 乘以漫反射BRDF（使用亮部BRDF？这里直接用brdfDiffuse，但最好用亮部）
+half3 indirectDiffuseLighting = saturate(radianceSH * brdfDiffuse);
+// 注：brdfDiffuse已包含金属度影响

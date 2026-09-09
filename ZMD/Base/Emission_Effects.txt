@@ -1,0 +1,10 @@
+// 自发光
+half4 var_EmissionMap = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv0.xy);
+half3 emissiveColor = var_EmissionMap.rgb * _EmissionColor.rgb;
+
+// 特效（可选，使用第二套UV input.uv0.zw）
+half3 effectsColor = 0.0;
+#ifdef _EFFECTSENABLE_ON
+    half4 var_EffectsMap = SAMPLE_TEXTURE2D(_EffectsMap, sampler_EffectsMap, input.uv0.zw);
+    effectsColor = var_EffectsMap.rgb * _EffectsColor.rgb;
+#endif

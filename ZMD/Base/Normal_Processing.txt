@@ -1,0 +1,6 @@
+// 采样法线贴图（切线空间）
+half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv0.xy), _NormalStrength);
+// 转换到世界空间（利用TBN矩阵）
+float3 normalWS = TransformTangentToWorld(normalTS, input.TBN);
+// 注意：normalWS 需归一化（若TBN非正交可归一化）
+normalWS = normalize(normalWS);

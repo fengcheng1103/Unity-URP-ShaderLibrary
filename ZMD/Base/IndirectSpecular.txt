@@ -1,0 +1,10 @@
+// 环境反射方向（基于视线反射）
+float3 reflectDir = reflect(-viewDirWS, normalWS.xyz);
+// 采样环境贴图（可旋转）
+float3 specularLD = GlossyEnvironmentReflection(RotateDirection(reflectDir, _EnvRotation.xyz), roughness, ao);
+// 取亮度（灰度）
+specularLD = dot(specularLD, float3(0.2126, 0.7152, 0.0722));
+// 环境BRDF近似（将F0和粗糙度、视角结合）
+real3 specularDFG = EnvBRDFApprox_Endfield(brdfSpecular, roughness, nov);
+// 最终间接高光
+float3 indirectSpecularLighting = clamp(0.0, 10.0, specularLD) * specularDFG * _EnvColor.rgb * _EnvLightStrength;

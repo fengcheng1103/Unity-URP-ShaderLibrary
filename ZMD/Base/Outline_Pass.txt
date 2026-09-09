@@ -1,0 +1,24 @@
+// 描边Pass（Cull Front，外扩法线）
+// Vertex Shader
+Varyings OutlineVertex(Attributes input)
+{
+    Varyings output;
+    // 采样描边遮罩（控制粗细）
+    half widthMap = SAMPLE_TEXTURE2D_LOD(_OutLineMask, sampler_OutLineMask, input.texcoord0, 0).r;
+    half outlineWidth = (_OutlineWidth * 0.001) * lerp(1.0, widthMap, _OutlineWidthMapStrength);
+    
+    float3 normalOS = input.normalOS;
+    float3 positionOS = input.positionOS.xyz + normalOS * outlineWidth;
+    float4 positionCS = TransformObjectToHClip(positionOS);
+    output.positionCS = positionCS;
+    output.uv0.xy = input.texcoord0;
+    output.color = input.color;
+    return output;
+}
+
+// Fragment Shader
+half4 OutlineFragment(Varyings input) : SV_Target
+{
+    half4 albedoColor = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv0.xy);
+    return half4(_OutlineColor.rgb * albedoColor.rgb, max(albedoColor.a, _Alpha));
+}

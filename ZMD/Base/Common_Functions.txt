@@ -1,0 +1,61 @@
+// 这些函数通常放在 ZmdCommon.hlsl 中，若需独立请复制以下定义：
+
+// 1. 金属度影响漫反射
+half OneMinusReflectivityMetallic(half metallic) {
+    return 1.0 - metallic * 0.04; // 近似
+}
+
+// 2. GGX 分布（Endfield 自定义）
+float D_DistributionGGX_Endfield(float NoH, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float denom = NoH * NoH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
+}
+
+// 3. Smith 几何衰减
+float G_GeometrySmith_Endfield(float NoV, float NoL, float roughness) {
+    float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+    float G1V = NoV / (NoV * (1.0 - k) + k);
+    float G1L = NoL / (NoL * (1.0 - k) + k);
+    return G1V * G1L;
+}
+
+// 4. 菲涅尔（直接光）
+float3 F_FrenelSchlick_Direct_Endfield(float NoV, float3 F0) {
+    return F0 + (1.0 - F0) * pow(1.0 - NoV, 5.0);
+}
+
+// 5. 环境BRDF近似
+float3 EnvBRDFApprox_Endfield(float3 F0, float roughness, float NoV) {
+    // 使用 URP 内置函数或自定义
+    // 这里省略，需参考 URP 的 Lighting.hlsl
+}
+
+// 6. 采样Ramp图（自定义）
+half4 SamplerRampMap(TEXTURE2D_PARAM(tex, sampler), float uv, float strength) {
+    half4 ramp = SAMPLE_TEXTURE2D(tex, sampler, float2(uv, 0.5));
+    return lerp(half4(1,1,1,1), ramp, strength);
+}
+
+// 7. RimLightMask（自定义）
+float GetRimLightMask(float offset, float softness, float posX, float3 normal, float3 direction) {
+    // 例如基于视角方向和法线的点积
+    float mask = dot(normal, direction) + offset;
+    mask = smoothstep(0, 1, saturate(mask * softness));
+    return mask;
+}
+
+// 8. GetRimLightColor（自定义，根据深度和菲涅尔）
+half3 GetRimLightColor(...) { /* 略 */ }
+
+// 9. ApplyLut2D（Lut查找）
+half3 ApplyLut2D(TEXTURE2D_PARAM(tex, sampler), half3 color, float size) {
+    // 标准 3D Lut 映射
+    // ...
+}
+
+// 10. RotateDirection（旋转方向）
+float3 RotateDirection(float3 dir, float3 rotation) {
+    // 用旋转向量旋转方向
+}

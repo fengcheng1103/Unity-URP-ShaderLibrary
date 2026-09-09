@@ -1,0 +1,5 @@
+// 根据 NdotL 构造Ramp UV（0~1）
+half rampUV_nol = nol * 0.5 + 0.5;
+// 采样Ramp图，_RampStrength 控制强度（通常混合原始漫反射）
+half4 rampColor_nol = SamplerRampMap(_RampMap, sampler_RampMap, rampUV_nol, _RampStrength);
+// 该函数返回 half4，.rgb 为颜色，.a 为明暗遮罩（用于混合亮暗部）

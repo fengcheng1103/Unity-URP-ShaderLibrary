@@ -1,0 +1,16 @@
+// 采样基础色贴图
+half4 var_AlbedoMap = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv0.xy);
+half3 albedoColor = var_AlbedoMap.rgb * _AlbedoColor.rgb;
+
+// 光照侧颜色（亮部）
+half3 albedoColor_Light = pow(saturate(albedoColor), _AlbedoStrength);
+
+// 暗部颜色（带强度与饱和度控制）
+half3 albedoColor_Dark = albedoColor_Light * _AlbedoDarkStrength;
+#ifdef _APPLYLUTENABLE_ON
+    // 若启用Lut，对暗部应用Lut
+    albedoColor_Dark = lerp(albedoColor, ApplyLut2D(TEXTURE2D_ARGS(_LutMap, sampler_LutMap), albedoColor, 32), _LutStrength) * _AlbedoDarkStrength;
+#endif
+// 暗部饱和度调节（转为灰度再混合）
+float luma = dot(albedoColor_Dark, float3(0.2126, 0.7152, 0.0722));
+albedoColor_Dark = lerp(luma.xxx, albedoColor_Dark, _AlbedoDarkSaturation);

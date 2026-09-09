@@ -1,0 +1,12 @@
+// 边缘光遮罩（基于位置、法线、方向）
+float combinedRimMask = GetRimLightMask(_RimMaskOffset, _RimMaskSoftness, input.positionWS.x, normalWS, _RimLightDirection.xyz);
+// 边缘光颜色计算（结合深度偏移和菲涅尔）
+half3 rimLighColor = GetRimLightColor(
+    _FresnelRimOffset, _FresnelRimPower, _FresnelRimIntensity,
+    normalWS, viewDirWS,
+    _DepthRimOffset, _DepthRimIntensity, _DepthRimLerp,
+    input.positionVS, input.positionCS,
+    albedoColor_Light, _RimLightColor.rgb,
+    ao, shadow, combinedRimMask
+);
+// 返回最终边缘光颜色（已乘强度）

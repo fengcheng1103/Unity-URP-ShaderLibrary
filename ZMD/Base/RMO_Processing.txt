@@ -1,0 +1,6 @@
+// 采样RMO贴图（R=金属度, G=反射率, B=AO, A=粗糙度逆）
+half4 var_RMOMap = SAMPLE_TEXTURE2D(_RMOMap, sampler_RMOMap, input.uv0.xy);
+half metallic = var_RMOMap.r * _MetallicStrength;
+half roughness = (1.0 - var_RMOMap.a) * _RoughnessStrength; // 贴图存光滑度，取反
+half ao = lerp(1.0, var_RMOMap.b, _OcclusionStrength);     // AO，保留原始值或平滑
+float reflectivity = var_RMOMap.g;                          // 反射率（用于非金属）
